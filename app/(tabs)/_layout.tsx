@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
-import { LayoutDashboard, Calendar, User, Clock, Users } from 'lucide-react-native';
+import { LayoutDashboard, Calendar, User, Clock, Users, MessageSquare } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../src/context/AuthContext';
@@ -72,6 +72,7 @@ function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
                 const strokeWidth = isFocused ? 2.5 : 2;
                 switch (route.name) {
                   case 'index': return <LayoutDashboard size={size} color={color} strokeWidth={strokeWidth} />;
+                  case 'nodes': return <MessageSquare size={size} color={color} strokeWidth={strokeWidth} />;
                   case 'students': return <Users size={size} color={color} strokeWidth={strokeWidth} />;
                   case 'sessions': return <Clock size={size} color={color} strokeWidth={strokeWidth} />;
                   case 'schedule': return <Calendar size={size} color={color} strokeWidth={strokeWidth} />;
@@ -108,12 +109,13 @@ export default function TabLayout() {
   const canManage = user?.role === 'teacher' || user?.role === 'admin';
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <View style={styles.content}>
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{ headerShown: false }}
       >
         <Tabs.Screen name="index" options={{ title: 'Home' }} />
+        <Tabs.Screen name="nodes" options={{ title: 'Nodes' }} />
         <Tabs.Screen 
           name="students" 
           options={{ 
@@ -136,6 +138,10 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  content: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   tabBarContainer: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 35 : 25,
