@@ -135,7 +135,12 @@ export default function LoginScreen() {
     if (!otp) return;
     setLoading(true);
     try {
-      await apiClient.post('/auth/claim-verify', { email, otp });
+      await apiClient.post('/auth/claim-verify', {
+        email,
+        otp,
+        organization_id: selectedOrg,
+        role
+      });
       setView('activate_password');
     } catch (err: any) {
       Alert.alert('Error', 'Invalid or expired OTP');
@@ -155,7 +160,12 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
-      await apiClient.post('/auth/claim-finalize', { email, password: newPassword });
+      await apiClient.post('/auth/claim-finalize', {
+        email,
+        password: newPassword,
+        organization_id: selectedOrg,
+        role
+      });
       setView('success');
     } catch (err: any) {
       Alert.alert('Error', 'Failed to finalize account');
