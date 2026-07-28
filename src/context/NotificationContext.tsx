@@ -5,7 +5,6 @@ import { io, Socket } from 'socket.io-client';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Bell, CheckCircle, AlertCircle, Info, X, Clock } from 'lucide-react-native';
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import apiClient from '../api/client';
@@ -16,9 +15,14 @@ LogBox.ignoreLogs([
   'expo-notifications: Push notifications',
 ]);
 
-const isExpoGo = Constants.appOwnership === 'expo';
+const isExpoGo = Constants.executionEnvironment === 'storeClient' || Constants.appOwnership === 'expo';
+// SDK 53 Expo Go throws while loading expo-notifications for remote push.
+// Load the module only in a development/production native build.
+const Notifications = isExpoGo
+  ? null
+  : (require('expo-notifications') as typeof import('expo-notifications'));
 
-if (!isExpoGo) {
+if (Notifications) {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -31,7 +35,7 @@ if (!isExpoGo) {
 }
 
 async function registerForPushNotificationsAsync() {
-  if (Platform.OS === 'web' || isExpoGo || !Device.isDevice) {
+  if (Platform.OS === 'web' || isExpoGo || !Device.isDevice || !Notifications) {
     console.log('[Mobile Push] Push notifications require physical device and native build.');
     return null;
   }
@@ -153,7 +157,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     fetchNotifications();
 
     let notifSubscription: any = null;
-    if (Platform.OS !== 'web' && !isExpoGo && Device.isDevice) {
+    if (Platform.OS !== 'web' && !isExpoGo && Device.isDevice && Notifications) {
       registerForPushNotificationsAsync().then(token => {
         if (token) {
           console.log('[Mobile Push Token]: Retrieved Expo push token:', token);
@@ -220,7 +224,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
           showToast(notif);
 
           // Schedule local OS notification only if not in Expo Go
-          if (!isExpoGo) {
+          if (!isExpoGo && Notifications) {
             Notifications.scheduleNotificationAsync({
               content: {
                 title: notif.title || 'Merge Notification',

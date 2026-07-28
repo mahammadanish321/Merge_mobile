@@ -26,6 +26,7 @@ type NativeUpdateState = {
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://merge-backend.onrender.com/api';
 const CURRENT_APP_VERSION = Constants.expoConfig?.version || '0.0.0';
+const isExpoGo = Constants.executionEnvironment === 'storeClient' || Constants.appOwnership === 'expo';
 
 function compareVersions(currentVersion: string, requiredVersion: string) {
   const current = currentVersion.split('.').map((part) => Number.parseInt(part, 10) || 0);
@@ -92,12 +93,13 @@ function RootLayoutNav() {
     if (loading) return;
 
     const inTabsGroup = segments[0] === '(tabs)';
+    const isProtectedRoute = inTabsGroup || segments[0] === 'chat';
 
-    if (!user && inTabsGroup) {
-      // Redirect to login if not logged in and trying to access tabs
+    if (!user && isProtectedRoute) {
+      // Redirect to login if not logged in and trying to access protected routes
       router.replace('/login');
-    } else if (user && segments[0] !== '(tabs)') {
-      // Redirect to tabs if logged in and not in tabs
+    } else if (user && segments[0] === 'login') {
+      // Redirect to tabs if logged in and trying to access login
       router.replace('/(tabs)');
     }
   }, [user, loading, segments, router]);
@@ -131,7 +133,7 @@ export default function RootLayout() {
     setNativeUpdate((current) => ({ ...current, checking: true }));
 
     try {
-      if (Updates.isEnabled) {
+      if (!isExpoGo && Updates.isEnabled) {
         const update = await Updates.checkForUpdateAsync();
 
         if (update.isAvailable) {

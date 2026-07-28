@@ -48,13 +48,13 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signIn = async (email, password, role = 'student') => {
+  const signIn = async (email, password, role = 'student', organization_id) => {
     try {
       let endpoint = '/auth/login';
       if (role === 'admin') endpoint = '/auth/admin/login';
       if (role === 'student') endpoint = '/auth/student/login';
 
-      const response = await apiClient.post(endpoint, { email, password, role });
+      const response = await apiClient.post(endpoint, { email, password, role, organization_id });
       const { token, user: userData } = response.data;
 
       const fullUserData = { ...userData, token };

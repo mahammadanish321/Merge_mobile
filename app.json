@@ -41,6 +41,19 @@
             "backgroundColor": "#105934"
           }
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them in the chat."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Merge to access your camera to take photos and videos for the chat.",
+          "microphonePermission": "Allow Merge to access your microphone to record video with audio."
+        }
       ]
     ],
     "experiments": {

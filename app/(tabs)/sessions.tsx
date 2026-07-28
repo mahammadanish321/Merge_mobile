@@ -25,7 +25,10 @@ import {
   CheckCircle2,
   ChevronRight,
   ShieldAlert,
+  Folder,
 } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../src/api/client';
 import { useAuth } from '../../src/context/AuthContext';
 import { AttendanceModal } from '../../src/components/AttendanceModal';
@@ -129,6 +132,57 @@ export default function SessionsScreen() {
       title: 'Cancel Routine Class',
       subtitle: 'Enter your account password to cancel this routine class:',
     });
+  };
+
+  const handleShareNoteFolder = async (item: any) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.8,
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) return;
+
+      const formData = new FormData();
+      result.assets.forEach((asset, index) => {
+        const filename = asset.uri.split('/').pop() || `upload_${index}.jpg`;
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image/jpeg`;
+        formData.append('files', { uri: asset.uri, name: filename, type } as any);
+      });
+
+      if (item.isCustom) {
+        formData.append('session_id', item.originalId);
+      } else {
+        formData.append('schedule_id', item.originalId);
+      }
+      
+      const dateParts = item.date.split('/');
+      const formattedDate = dateParts.length === 3 ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}` : item.date;
+      formData.append('upload_date', formattedDate);
+
+      const token = await AsyncStorage.getItem('userToken');
+      const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://merge-backend.onrender.com/api';
+      
+      const res = await fetch(`${BASE_URL}/notes/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+      
+      if (res.ok) {
+        Alert.alert("Success", "Class notes uploaded and shared with the chat node successfully!");
+      } else {
+        const errorData = await res.json();
+        Alert.alert("Error", errorData.message || "Failed to upload notes.");
+      }
+    } catch (error) {
+      console.error("Note Folder Upload error:", error);
+      Alert.alert("Folder Share Failed", "Could not upload the notes.");
+    }
   };
 
   const handleCancelCustomSession = (id: any) => {
@@ -554,6 +608,18 @@ export default function SessionsScreen() {
 
                                 {/* Action Buttons */}
                                 <View style={styles.cardActions}>
+                                  {isTeacher && (item.status === 'ended' || item.status === 'scheduled' || item.status === 'active') && (
+                                    <TouchableOpacity
+                                      style={styles.actionBtnShare}
+                                      onPress={(e) => {
+                                        e.stopPropagation();
+                                        handleShareNoteFolder(item);
+                                      }}
+                                    >
+                                      <Folder size={12} color="#059669" />
+                                      <Text style={styles.actionBtnShareText}>Share Note</Text>
+                                    </TouchableOpacity>
+                                  )}
                                   {(isDone || isCancelled) && (
                                     <Text style={styles.checkAttLink}>Check Attendance</Text>
                                   )}
@@ -854,6 +920,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: '#105934',
+  },
+  actionBtnShare: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ecfdf5',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+  },
+  actionBtnShareText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
   },
   actionBtnCancel: {
     backgroundColor: '#fef2f2',

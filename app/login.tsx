@@ -50,6 +50,8 @@ export default function LoginScreen() {
   // Organizations for activation
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
+  const [loginChecked, setLoginChecked] = useState(false);
+  const [loginOrganizations, setLoginOrganizations] = useState<Organization[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showOrgList, setShowOrgList] = useState(false);
 
@@ -77,6 +79,10 @@ export default function LoginScreen() {
 
   const handleRoleChange = (newRole: 'student' | 'teacher' | 'admin') => {
     setRole(newRole);
+    setLoginChecked(false);
+    setLoginOrganizations([]);
+    setSelectedOrg(null);
+    setPassword('');
     if (newRole === 'admin') {
       setView('register');
     } else {
@@ -96,17 +102,42 @@ export default function LoginScreen() {
   // --- HANDLERS ---
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email');
       return;
     }
+
     setLoading(true);
-    const result = await signIn(email, password, role);
-    setLoading(false);
-    if (result.success) {
-      router.replace('/(tabs)');
-    } else {
-      Alert.alert('Login Failed', result.message);
+    try {
+      if (!loginChecked) {
+        const response = await apiClient.get('/auth/check-email', { params: { email, role } });
+        if (!response.data.found) {
+          Alert.alert('Login Failed', `No ${role} account was found with this email.`);
+          return;
+        }
+
+        const matchingOrganizations = response.data.organizations as Organization[];
+        setLoginChecked(true);
+        setLoginOrganizations(matchingOrganizations);
+        setSelectedOrg(matchingOrganizations.length === 1 ? matchingOrganizations[0].id : null);
+        return;
+      }
+
+      if (!selectedOrg || !password) {
+        Alert.alert('Error', 'Select your organization and enter your password.');
+        return;
+      }
+
+      const result = await signIn(email, password, role, selectedOrg);
+      if (result.success) {
+        router.replace('/(tabs)');
+      } else {
+        Alert.alert('Login Failed', result.message);
+      }
+    } catch (err: any) {
+      Alert.alert('Login Failed', err.response?.data?.message || 'Unable to check this email. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -323,14 +354,33 @@ export default function LoginScreen() {
                       placeholder="name@college.edu"
                       placeholderTextColor="#9ca3af"
                       value={email}
-                      onChangeText={setEmail}
+                      onChangeText={(value) => {
+                        setEmail(value);
+                        setLoginChecked(false);
+                        setLoginOrganizations([]);
+                        setSelectedOrg(null);
+                        setPassword('');
+                      }}
                       keyboardType="email-address"
                       autoCapitalize="none"
+                      editable={!loginChecked}
                     />
                   </View>
                 </View>
 
-                <View style={styles.inputGroup}>
+                {loginChecked && loginOrganizations.length > 1 && !selectedOrg && (
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>select your organization</Text>
+                    {loginOrganizations.map(org => (
+                      <TouchableOpacity key={org.id} style={styles.orgChoice} onPress={() => setSelectedOrg(org.id)}>
+                        <Text style={styles.orgChoiceName}>{org.name}</Text>
+                        <Text style={styles.orgChoiceSlug}>{org.slug}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {loginChecked && selectedOrg && <View style={styles.inputGroup}>
                   <Text style={styles.label}>password</Text>
                   <View style={styles.inputWrapper}>
                     <Lock size={18} color="#6b7280" style={styles.inputIcon} />
@@ -346,15 +396,31 @@ export default function LoginScreen() {
                       {showPassword ? <EyeOff size={18} color="#6b7280" /> : <Eye size={18} color="#6b7280" />}
                     </TouchableOpacity>
                   </View>
-                </View>
+                </View>}
 
-                <TouchableOpacity style={styles.forgotBtn} onPress={() => setView('forgot_email')}>
+                {loginChecked && selectedOrg && <TouchableOpacity style={styles.forgotBtn} onPress={() => setView('forgot_email')}>
                   <Text style={styles.forgotText}>Forgot Password?</Text>
+                </TouchableOpacity>}
+
+                <TouchableOpacity
+                  style={styles.mainButton}
+                  onPress={handleLogin}
+                  disabled={loading || (loginChecked && loginOrganizations.length > 1 && !selectedOrg)}
+                >
+                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.mainButtonText}>{loginChecked ? 'Login' : 'Continue'}</Text>}
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.mainButton} onPress={handleLogin} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.mainButtonText}>Login</Text>}
-                </TouchableOpacity>
+                {loginChecked && (
+                  <TouchableOpacity style={styles.backButton} onPress={() => {
+                    setLoginChecked(false);
+                    setLoginOrganizations([]);
+                    setSelectedOrg(null);
+                    setPassword('');
+                  }}>
+                    <ArrowLeft size={16} color="#4b5563" />
+                    <Text style={styles.backButtonText}>Change Email</Text>
+                  </TouchableOpacity>
+                )}
 
                 <TouchableOpacity style={styles.subLink} onPress={() => setView('activate_email')}>
                   <Text style={styles.subLinkText}>First time logging in? Activate account</Text>
@@ -693,6 +759,9 @@ const styles = StyleSheet.create({
   dropdownItem: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   dropdownText: { fontSize: 14, color: '#111827', fontWeight: '500' },
   dropdownSlug: { fontSize: 12, color: '#6b7280', backgroundColor: '#f3f4f6', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 5 },
+  orgChoice: { backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#86efac', borderRadius: 12, padding: 14, marginBottom: 10 },
+  orgChoiceName: { color: '#111827', fontSize: 15, fontWeight: '700' },
+  orgChoiceSlug: { color: '#166534', fontSize: 12, marginTop: 3 },
   otpInputWrapper: { alignItems: 'center', marginVertical: 30 },
   otpInput: { fontSize: 36, letterSpacing: 10, fontWeight: '800', color: '#105934', borderBottomWidth: 2, borderBottomColor: '#105934', width: '80%', textAlign: 'center', paddingBottom: 10 },
   forgotBtn: { alignSelf: 'flex-end', marginBottom: 30 },

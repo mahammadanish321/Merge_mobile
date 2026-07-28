@@ -3,7 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Replace with your local IP address if testing on a physical device
 // Automatically use the cloud backend URL from .env
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://Merge-backend.onrender.com/api'; 
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://merge-backend.onrender.com/api'; 
+export const SOCKET_URL = BASE_URL.replace('/api', '');
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
