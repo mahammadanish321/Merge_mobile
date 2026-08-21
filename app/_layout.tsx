@@ -14,6 +14,9 @@ import { NotificationProvider } from '../src/context/NotificationContext';
 LogBox.ignoreLogs([
   'expo-notifications: Android Push notifications',
   'expo-notifications: Push notifications',
+  'Unable to activate keep awake',
+  'Unable to deactivate keep awake',
+  'Error: Unable to activate keep awake',
 ]);
 
 type NativeUpdateState = {
@@ -93,7 +96,7 @@ function RootLayoutNav() {
     if (loading) return;
 
     const inTabsGroup = segments[0] === '(tabs)';
-    const isProtectedRoute = inTabsGroup || segments[0] === 'chat';
+    const isProtectedRoute = inTabsGroup || segments[0] === 'chat' || segments[0] === 'drop' || segments[0] === 'sessions';
 
     if (!user && isProtectedRoute) {
       // Redirect to login if not logged in and trying to access protected routes
@@ -113,9 +116,11 @@ function RootLayoutNav() {
   }
 
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="sessions" options={{ headerShown: false }} />
+      <Stack.Screen name="drop" options={{ headerShown: false }} />
       <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
     </Stack>
   );

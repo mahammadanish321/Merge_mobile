@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  Modal,
+  ScrollView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -39,6 +41,27 @@ export default function ChatScreen() {
   const [editingFolder, setEditingFolder] = useState<any>(null);
   const [editedAttachments, setEditedAttachments] = useState<string[]>([]);
   const [isEditingFolderLoading, setIsEditingFolderLoading] = useState(false);
+  const [folderModal, setFolderModal] = useState<{ open: boolean; title: string; loading: boolean; notes: any[] }>({
+    open: false,
+    title: '',
+    loading: false,
+    notes: [],
+  });
+
+  const openNoteFolder = async (item: any) => {
+    setFolderModal({
+      open: true,
+      title: item.noteFolderName || 'Note Folder',
+      loading: true,
+      notes: [],
+    });
+    try {
+      const res = await api.get(`/notes/folders/${item.noteFolderId || item.id}`);
+      setFolderModal((p) => ({ ...p, loading: false, notes: res.data || [] }));
+    } catch (e) {
+      setFolderModal((p) => ({ ...p, loading: false }));
+    }
+  };
   
   const typingTimeoutRef = useRef<any>(null);
   const flatListRef = useRef<FlatList>(null);

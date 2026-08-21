@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
-import { LayoutDashboard, Calendar, User, Clock, Users, MessageSquare } from 'lucide-react-native';
+import { LayoutDashboard, Calendar, User, Clock, Users, MessageSquare, Flame } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../src/context/AuthContext';
@@ -16,18 +16,17 @@ function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
   const { user } = useAuth();
   const canManage = user?.role === 'teacher' || user?.role === 'admin';
 
-  // Force filter management routes for non-privileged users
+  // Filter routes for tab dock
   const visibleRoutes = state.routes.filter((route: any) => {
+    // 1. Never show sessions on the bottom dock (it is accessed from Routine header)
+    if (route.name === 'sessions') return false;
+
+    // 2. Hide students tab for student users
+    if (route.name === 'students' && !canManage) return false;
+
     const { options } = descriptors[route.key];
-    
-    // 1. Hide if explicitly told to via href: null
-    if (options.href === null) return false;
-    
-    // 2. Extra safety: Hide management routes for students by name
-    if ((route.name === 'students' || route.name === 'sessions') && !canManage) {
-      return false;
-    }
-    
+    if (options?.href === null) return false;
+
     return true;
   });
 
@@ -73,6 +72,7 @@ function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
                 switch (route.name) {
                   case 'index': return <LayoutDashboard size={size} color={color} strokeWidth={strokeWidth} />;
                   case 'nodes': return <MessageSquare size={size} color={color} strokeWidth={strokeWidth} />;
+                  case 'drop': return <Flame size={size} color={color} strokeWidth={strokeWidth} />;
                   case 'students': return <Users size={size} color={color} strokeWidth={strokeWidth} />;
                   case 'sessions': return <Clock size={size} color={color} strokeWidth={strokeWidth} />;
                   case 'schedule': return <Calendar size={size} color={color} strokeWidth={strokeWidth} />;
@@ -116,18 +116,12 @@ export default function TabLayout() {
       >
         <Tabs.Screen name="index" options={{ title: 'Home' }} />
         <Tabs.Screen name="nodes" options={{ title: 'Nodes' }} />
+        <Tabs.Screen name="drop" options={{ title: 'Drop' }} />
         <Tabs.Screen 
           name="students" 
           options={{ 
             title: 'Students', 
             href: canManage ? '/students' : null 
-          }} 
-        />
-        <Tabs.Screen 
-          name="sessions" 
-          options={{ 
-            title: 'Sessions', 
-            href: canManage ? '/sessions' : null 
           }} 
         />
         <Tabs.Screen name="schedule" options={{ title: 'Routine' }} />

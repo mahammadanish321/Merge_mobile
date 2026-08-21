@@ -9,7 +9,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for token on load
     loadStorageData();
   }, []);
 
@@ -43,6 +42,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
     } catch (error) {
+      console.warn('Load storage error:', error);
     } finally {
       setLoading(false);
     }
@@ -72,6 +72,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signInWithGoogle = async (idToken, role = 'student', organization_id) => {
+    try {
+      const response = await apiClient.post('/auth/firebase-login', { 
+        idToken, 
+        role, 
+        organization_id,
+        platform: 'mobile' 
+      });
+      const { token, user: userData } = response.data;
+
+      const fullUserData = { ...userData, token };
+      await AsyncStorage.setItem('userToken', token);
+      await AsyncStorage.setItem('userData', JSON.stringify(fullUserData));
+      
+      setUser(fullUserData);
+      return { success: true };
+    } catch (error) {
+      console.log('Google Login Error:', error.response?.data || error.message);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Google Login failed - please try again' 
+      };
+    }
+  };
+
   const logout = async () => {
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userData');
@@ -79,7 +104,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, logout }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signInWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

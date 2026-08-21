@@ -27,7 +27,7 @@ import { SwipeWrapper } from '../../src/components/SwipeWrapper';
 import api from '../../src/api/client';
 import { useAuth } from '../../src/context/AuthContext';
 import { AttendanceModal } from '../../src/components/AttendanceModal';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const FULL_DAYS: { [key: string]: string } = {
@@ -66,6 +66,7 @@ const getCurrentDayName = () => {
 
 export default function ScheduleScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const isTeacher = user?.role === 'teacher';
   const isStudent = user?.role === 'student';
   const canManage = isTeacher || user?.role === 'admin';
@@ -275,6 +276,7 @@ export default function ScheduleScreen() {
         <View style={styles.header}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>Routine</Text>
+            
             {canManage && (
               <View style={styles.dropdowns}>
                 <TouchableOpacity style={styles.dropdownBtn} onPress={() => setShowYearModal(true)}>
@@ -289,7 +291,27 @@ export default function ScheduleScreen() {
             )}
           </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 15 }}>
+          {/* Teacher Sessions Quick Access Banner */}
+          {canManage && (
+            <TouchableOpacity 
+              style={styles.sessionsBanner} 
+              onPress={() => router.push('/sessions' as any)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.sessionsBannerLeft}>
+                <View style={styles.sessionsIconWrapper}>
+                  <Clock size={16} color="#105934" strokeWidth={2.5} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sessionsBannerTitle}>Manage Class Sessions</Text>
+                  <Text style={styles.sessionsBannerSubtitle}>Take attendance, upload notes & custom classes</Text>
+                </View>
+              </View>
+              <ChevronRight size={18} color="#105934" />
+            </TouchableOpacity>
+          )}
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 }}>
             <View style={[styles.weekSelector, { flex: 1 }]}>
               <TouchableOpacity style={styles.navBtn} onPress={() => setWeekOffset((prev) => prev - 1)}>
                 <ChevronLeft size={20} color="#105934" />
@@ -604,6 +626,49 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '900',
     color: '#0f172a',
+  },
+  sessionsBanner: {
+    marginTop: 12,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 89, 52, 0.2)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#105934',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  sessionsBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    marginRight: 8,
+  },
+  sessionsIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#dcfce7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sessionsBannerTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#105934',
+  },
+  sessionsBannerSubtitle: {
+    fontSize: 11,
+    color: '#166534',
+    fontWeight: '500',
+    marginTop: 1,
   },
   dropdowns: {
     flexDirection: 'row',

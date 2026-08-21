@@ -12,7 +12,7 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
-import { SwipeWrapper } from '../../src/components/SwipeWrapper';
+import { SwipeWrapper } from '../src/components/SwipeWrapper';
 import {
   Clock,
   Plus,
@@ -26,15 +26,18 @@ import {
   ChevronRight,
   ShieldAlert,
   Folder,
+  ArrowLeft,
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../../src/api/client';
-import { useAuth } from '../../src/context/AuthContext';
-import { AttendanceModal } from '../../src/components/AttendanceModal';
-import { AddCustomSessionModal } from '../../src/components/AddCustomSessionModal';
+import { useRouter } from 'expo-router';
+import api from '../src/api/client';
+import { useAuth } from '../src/context/AuthContext';
+import { AttendanceModal } from '../src/components/AttendanceModal';
+import { AddCustomSessionModal } from '../src/components/AddCustomSessionModal';
 
 export default function SessionsScreen() {
+  const router = useRouter();
   const { user } = useAuth();
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
@@ -427,16 +430,32 @@ export default function SessionsScreen() {
   return (
     <SwipeWrapper>
       <View style={styles.mainContainer}>
+        {/* Top Header */}
         <View style={styles.header}>
-          <View>
+          <TouchableOpacity 
+            onPress={() => router.replace('/(tabs)/schedule' as any)} 
+            style={styles.backBtn}
+            activeOpacity={0.7}
+          >
+            <ArrowLeft size={20} color="#0f172a" />
+          </TouchableOpacity>
+
+          <View style={styles.headerTitleContainer}>
             <Text style={styles.title}>Sessions</Text>
-            <Text style={styles.subtitle}>Monitor and manage all class sessions</Text>
+            <Text style={styles.subtitle} numberOfLines={1}>Monitor and manage all class sessions</Text>
           </View>
-          {(isTeacher || isAdmin) && (
-            <TouchableOpacity style={styles.newBtn} onPress={() => setShowAddModal(true)}>
-              <Plus size={18} color="#fff" />
+
+          {(isTeacher || isAdmin) ? (
+            <TouchableOpacity 
+              style={styles.newBtn} 
+              onPress={() => setShowAddModal(true)}
+              activeOpacity={0.8}
+            >
+              <Plus size={16} color="#fff" />
               <Text style={styles.newBtnText}>New</Text>
             </TouchableOpacity>
+          ) : (
+            <View style={{ width: 40 }} />
           )}
         </View>
 
@@ -647,7 +666,7 @@ export default function SessionsScreen() {
               );
             })
           )}
-          <View style={{ height: 140 }} />
+          <View style={{ height: 60 }} />
         </ScrollView>
 
         {/* Modals */}
@@ -720,57 +739,75 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    paddingTop: Platform.OS === 'ios' ? 70 : 50,
-    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 60 : 45,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitleContainer: {
+    flex: 1,
+    marginHorizontal: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '900',
     color: '#0f172a',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#64748b',
-    marginTop: 4,
-    fontWeight: '600',
+    marginTop: 2,
+    fontWeight: '500',
   },
   newBtn: {
     backgroundColor: '#105934',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     shadowColor: '#105934',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 4,
+    elevation: 3,
   },
   newBtnText: {
     color: '#fff',
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 13,
   },
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     gap: 8,
-    marginBottom: 20,
+    marginTop: 14,
+    marginBottom: 16,
   },
   statPill: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8fafc',
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 7,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#f1f5f9',
     gap: 6,
@@ -785,7 +822,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
   },
   centerBox: {
     paddingVertical: 80,
@@ -804,7 +841,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
     marginBottom: 12,
@@ -840,7 +877,7 @@ const styles = StyleSheet.create({
   },
   sessionCard: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: '#f1f5f9',
     flexDirection: 'row',
@@ -860,29 +897,29 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   typeBar: {
-    width: 6,
+    width: 5,
   },
   cardContent: {
     flex: 1,
-    padding: 16,
+    padding: 14,
   },
   cardMain: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   subjectText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: '#1e293b',
     flex: 1,
     marginRight: 10,
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 7,
   },
   statusText: {
     fontSize: 11,
@@ -890,13 +927,13 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: 'row',
-    gap: 15,
-    marginBottom: 12,
+    gap: 14,
+    marginBottom: 10,
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   metaText: {
     fontSize: 12,
@@ -914,7 +951,7 @@ const styles = StyleSheet.create({
   cardActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   checkAttLink: {
     fontSize: 12,
