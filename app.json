@@ -54,7 +54,11 @@
           "cameraPermission": "Allow Merge to access your camera to take photos and videos for the chat.",
           "microphonePermission": "Allow Merge to access your microphone to record video with audio."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

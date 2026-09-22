@@ -1202,7 +1202,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   overlayDismiss: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   dragPillWrapper: {
     alignItems: 'center',

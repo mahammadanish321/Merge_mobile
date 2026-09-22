@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
   },
   strapTexture: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     opacity: 0.45,
     borderLeftWidth: 2,
     borderRightWidth: 2,
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     width: 78,
   },
   webbingTab: { width: 42, height: 30, borderBottomLeftRadius: 2, borderBottomRightRadius: 2, overflow: 'hidden', borderLeftWidth: 0.5, borderRightWidth: 0.5, borderColor: 'rgba(0,0,0,0.9)', zIndex: 5 },
-  webbingGrain: { ...StyleSheet.absoluteFillObject, borderLeftWidth: 2, borderRightWidth: 2, borderColor: 'rgba(255,255,255,0.035)', opacity: 0.9 },
+  webbingGrain: { ...StyleSheet.absoluteFill, borderLeftWidth: 2, borderRightWidth: 2, borderColor: 'rgba(255,255,255,0.035)', opacity: 0.9 },
   webbingPress: { position: 'absolute', bottom: 7, alignSelf: 'center', width: 10, height: 10, borderRadius: 5, backgroundColor: 'rgba(0,0,0,0.24)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
   triangleRing: { width: 66, height: 42, marginTop: -7, zIndex: 3 },
   triangleRingLeft: { position: 'absolute', left: 8, top: 0, width: 38, height: 38, borderLeftWidth: 4, borderBottomWidth: 4, borderColor: '#171716', borderBottomLeftRadius: 14, transform: [{ rotate: '28deg' }], shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.18, shadowRadius: 3 },
