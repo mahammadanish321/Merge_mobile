@@ -4,22 +4,25 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 const getBaseUrl = () => {
-  if (process.env.EXPO_PUBLIC_API_URL) {
-    return process.env.EXPO_PUBLIC_API_URL;
-  }
-
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
       return 'http://localhost:5000/api';
     }
+    if (process.env.EXPO_PUBLIC_API_URL) {
+      return process.env.EXPO_PUBLIC_API_URL;
+    }
   } else {
-    // Automatically extract computer's local IP address from Expo bundler connection
+    // Automatically extract computer's local IP address from active Expo bundler connection
     const hostUri = Constants.expoConfig?.hostUri || Constants.manifest2?.extra?.expoGo?.debuggerHost || Constants.manifest?.debuggerHost || '';
     if (hostUri) {
       const ip = hostUri.split(':')[0];
       if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
         return `http://${ip}:5000/api`;
       }
+    }
+
+    if (process.env.EXPO_PUBLIC_API_URL) {
+      return process.env.EXPO_PUBLIC_API_URL;
     }
   }
 

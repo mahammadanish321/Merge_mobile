@@ -9,6 +9,7 @@ import { ActivityIndicator, Linking, LogBox, Pressable, StyleSheet, Text, View }
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { NotificationProvider } from '../src/context/NotificationContext';
+import { BASE_URL } from '../src/api/client';
 
 LogBox.ignoreLogs([
   'expo-notifications: Android Push notifications',
@@ -26,7 +27,7 @@ type NativeUpdateState = {
   updateUrl?: string;
 };
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://merge-backend.onrender.com/api';
+const API_BASE_URL = BASE_URL;
 const CURRENT_APP_VERSION = Constants.expoConfig?.version || '0.0.0';
 const isExpoGo = Constants.executionEnvironment === 'storeClient' || Constants.appOwnership === 'expo';
 
@@ -119,7 +120,10 @@ function RootLayoutNav() {
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="sessions" options={{ headerShown: false }} />
-      <Stack.Screen name="drop" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/camera" options={{ headerShown: false }} />
+      <Stack.Screen name="drop/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="drop/create" options={{ headerShown: false }} />
       <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
     </Stack>
   );

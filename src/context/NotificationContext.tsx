@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { Bell, CheckCircle, AlertCircle, Info, X, Clock } from 'lucide-react-native';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
-import apiClient from '../api/client';
+import apiClient, { SOCKET_URL } from '../api/client';
 import { useAuth } from './AuthContext';
 
 LogBox.ignoreLogs([
@@ -71,7 +71,7 @@ async function registerForPushNotificationsAsync() {
 }
 
 const { width } = Dimensions.get('window');
-const BASE_SOCKET_URL = (process.env.EXPO_PUBLIC_API_URL || 'https://merge-backend.onrender.com/api').replace('/api', '');
+const BASE_SOCKET_URL = SOCKET_URL;
 
 interface NotificationItem {
   id: number;
